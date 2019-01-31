@@ -2,40 +2,70 @@ import XCTest
 
 class BowlingGame {
     var frames = [Int: [Int]]()
-    var currentFrame = 0
-    var rolls = 0
+    var currentFrame = 1
+    var frameRoll = 1
+    var openSpare = false
+    var openStrike = false
 
-    func roll(pins: Int) {
-        
-        if(rolls % 2 == 0) {
-            currentFrame += 1
-            frames[currentFrame] = [Int]()
-        }
-        
-        if(currentFrame > 1) {
-            maybeScoreSpare(prevFrame: currentFrame - 1, pins: pins)
-        }
-        
-        if(frames[currentFrame]?.count == 0) {
-            frames[currentFrame]?.append(pins)
-        } else if(frames[currentFrame]?.count == 1) {
-            frames[currentFrame]?.append(pins)
-        }
-        
-        rolls += 1
+    init() {
+        frames[1] = [Int]()
     }
     
-    func maybeScoreSpare(prevFrame: Int, pins: Int) {
-        if(frames[prevFrame]?.reduce(0) { $0 + $1 } == 10) {
-            frames[prevFrame]?[1] += pins
+    func roll(pins: Int) {
+        frames[currentFrame]?.append(pins)
+        
+        if(currentFrame > 1) {
+            if(openStrike) {
+                scoreStrike(pins: pins)
+            } else if(openSpare) {
+                scoreSpare(pins: pins)
+            }
         }
+        
+        if(frameRoll == 1 && pins == 10) {
+            openStrike = true
+            nextFrame()
+        } else if(frames[currentFrame]?.reduce(0) { $0 + $1 } == 10) {
+            openSpare = true
+            nextFrame()
+        } else if(frameRoll == 1) {
+            frameRoll = 2
+        } else {
+            nextFrame()
+        }
+    }
+    
+    func nextFrame() {
+        if(currentFrame == 10) {
+            return
+        }
+        currentFrame += 1
+        frames[currentFrame] = [Int]()
+        frameRoll = 1
+    }
+    
+    func scoreSpare(pins: Int) {
+        frames[currentFrame - 1]?[1] += pins
+        openSpare = false
+    }
+    
+    func scoreStrike(pins: Int) {
+            if(frameRoll == 1) {
+                frames[currentFrame - 1]?[0] += pins
+                frames[currentFrame - 1]?.append(pins)
+            } else {
+                frames[currentFrame - 1]?[1] += pins
+                openStrike = false
+            }
+        
     }
 
     func score() -> Int{
         var score = 0
         
         for key in 1...10 {
-            score += frames[key]?.reduce(0) { $0 + $1 } ?? 0
+            score += frames[key]?[0] ?? 0
+            score += frames[key]?[1] ?? 0
         }
         
         return score
@@ -64,31 +94,46 @@ class BowlingGameTests: XCTestCase {
 
         XCTAssertEqual(game?.score(), 0)
     }
-    
+
     func testNoSparesOrStrikes() {
-        var count: Int = 0
+        var count = 0
         for _ in 1...20 {
             let randNum = Int.random(in: 1..<5)
             game?.roll(pins: randNum)
-            count = count + randNum
+            count += randNum
         }
-        
+
         XCTAssertEqual(game?.score(), count)
     }
 
     func testOneSpare() {
         game?.roll(pins: 6)
         game?.roll(pins: 4)
-        game?.roll(pins: 7)
+        game?.roll(pins: 5)
+
+        var count = 0
+        for _ in 1...17 {
+            let randNum = Int.random(in: 1..<5)
+            game?.roll(pins: randNum)
+            count += randNum
+        }
+
+        XCTAssertEqual(game?.score(), count + 20)
+    }
+    
+    func testOneStrike() {
+        game?.roll(pins: 10)
+        game?.roll(pins: 4)
+        game?.roll(pins: 3)
 
         var count: Int = 0
-        for _ in 1...17 {
+        for _ in 1...16 {
             let randNum = Int.random(in: 1..<5)
             game?.roll(pins: randNum)
             count = count + randNum
         }
-
-        XCTAssertEqual(game?.score(), count + 24)
+        
+        XCTAssertEqual(game?.score(), count + 28)
     }
 }
 
