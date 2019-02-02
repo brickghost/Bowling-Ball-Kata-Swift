@@ -8,7 +8,7 @@ Visit the original [here](http://butunclebob.com/ArticleS.UncleBob.TheBowlingGam
 ### Branch off of master to begin your own implementation
 My first down and dirty pass at this can be found on branch [brick_01](https://github.com/brickghost/SwiftBowlingKata/tree/brick_01). It has not been refactored, I may do so but will probably just start again
 
-Feel free to clone and branch your own attempt(s) and submit pull requests, I look forward to seeing other approaches.
+Feel free to fork the repo, branch your own attempt(s) and submit a pull request, I look forward to seeing other approaches.
 
 Commiting after each test and the resulting successful implementation offers other developers to see the evolution of your solution and is highly recommended.
 
